@@ -75,8 +75,7 @@ const pickerSelectStyles = StyleSheet.create({
     borderColor: "#000",
     borderRadius: 15,
     color: "#000",
-    paddingRight: 30, // to ensure the text is never behind the icon
-    backgroundColor: "yellow",
+    paddingRight: 30,
   },
   inputIOS: {
     fontSize: 16,
@@ -84,7 +83,7 @@ const pickerSelectStyles = StyleSheet.create({
     borderColor: "#000",
     borderRadius: 4,
     color: "black",
-    paddingRight: 30, // to ensure the text is never behind the icon
+    paddingRight: 30,
   },
 });
 
@@ -106,7 +105,6 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 0,
     paddingBottom: 0,
-    backgroundColor: "green",
     paddingHorizontal: 0,
   },
   filterPicker: {
@@ -119,7 +117,6 @@ const styles = StyleSheet.create({
     color: "#000",
     width: "100%",
     margin: "auto",
-    backgroundColor: "red",
   },
   searchButton: {
     padding: 10,
