@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 
 import { useIsFocused } from "@react-navigation/native";
-import RNPickerSelect from "react-native-picker-select";
 import Icon from "react-native-vector-icons/Ionicons";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 
-import { stylesHome, pickerSelectStylesHome } from "../../styles/GlobalStyles";
+import { stylesHome} from "../../styles/GlobalStyles";
+import PickerSelect from "../../components/forms/PickerSelect";
 import useStorage from "../../components/hooks/useStorage";
 
 export function Home({ navigation }) {
-  const { getItem, logAsyncStorageItems } = useStorage();
+  const { getItem } = useStorage();
   const [proposals, setProposals] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState();
   const isFocused = useIsFocused();
@@ -18,18 +18,11 @@ export function Home({ navigation }) {
   useEffect(() => {
     async function loadProposal() {
       const proposals = await getItem("@proposal");
-      console.log("teste123", proposals);
       setProposals(proposals);
     }
     loadProposal();
   }, [isFocused]);
 
-  const filterOptions = [
-    { label: "CPF", value: "document" },
-    { label: "Nome", value: "name" },
-    { label: "Cidade", value: "city" },
-    { label: "Proposta", value: "proposal" },
-  ];
 
   return (
     <View style={stylesHome.containerHome}>
@@ -42,7 +35,8 @@ export function Home({ navigation }) {
               selectedItem={selectedFilter}
               onValueChange={(value) => setSelectedFilter(value)}
               label="Filtrar por"
-              hasTextLabel={true}
+              hasTextLabel={false}
+              customStyle={true}
             />
           </View>
           <TouchableOpacity style={stylesHome.searchButton}>
@@ -52,7 +46,6 @@ export function Home({ navigation }) {
             </View>
           </TouchableOpacity>
         </View>
-        {console.log("teste proposal", proposals)}
         <FlatList
           data={proposals}
           keyExtractor={(item) => item.id.toString()}

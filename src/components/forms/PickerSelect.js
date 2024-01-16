@@ -4,10 +4,11 @@ import RNPickerSelect from "react-native-picker-select";
 import {
   stylesForms,
   pickerSelectStylesForms,
+  pickerSelectStylesHome
 } from "../../styles/GlobalStyles";
 import fakeApi from "../api/formFakeAPi/FakeApi";
 
-const PickerSelect = ({ tableName, selectedItem, onValueChange, label, hasTextLabel }) => {
+const PickerSelect = ({ tableName, selectedItem, onValueChange, label, hasTextLabel, customStyle }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -24,11 +25,11 @@ const PickerSelect = ({ tableName, selectedItem, onValueChange, label, hasTextLa
   }, [tableName]);
 
   return (
-    <View style={[stylesForms.formCol, stylesForms.shortInput]}>
+    <View style={customStyle? '':[stylesForms.formCol, stylesForms.shortInput]}>
       {hasTextLabel && <Text style={stylesForms.label}>{label}</Text>}
       <View style={stylesForms.pickerContainer}>
         <RNPickerSelect
-          style={pickerSelectStylesForms}
+          style={customStyle ? pickerSelectStylesHome : pickerSelectStylesForms}
           placeholder={{
             label: `${label}`,
             value: null,

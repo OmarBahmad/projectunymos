@@ -24,7 +24,7 @@ export const pickerSelectStylesForms = StyleSheet.create({
 
 export const pickerSelectStylesHome = StyleSheet.create({
   inputAndroid: {
-    minWidth: "48%",
+    minWidth: "100%",
     minHeight: 50,
     backgroundColor: "#fff",
     fontSize: 16,
@@ -141,10 +141,7 @@ export const stylesHome = StyleSheet.create({
   filterPicker: {
     fontSize: 16,
     marginTop: 5,
-    padding: 5,
-    borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 15,
+    borderRadius: 20,
     color: "#000",
     width: "100%",
     margin: "auto",
