@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "projectunymos",
-    "slug": "projectunymos",
+    "slug": "expoprojectunymos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,12 +19,19 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.omarbahmad.expoprojectunymos"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9eda1d0f-b5b2-4e95-9c9b-47fce9ca215c"
+      }
+    },
+    "owner": "omarbahmad"
   }
 }
