@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 export const pickerSelectStylesForms = StyleSheet.create({
   inputAndroid: {
@@ -97,7 +97,7 @@ export const stylesForms = StyleSheet.create({
   buttonText: {
     color: "#fff",
     textAlign: "center",
-    fontSize: 16
+    fontSize: 16,
   },
   button: {
     backgroundColor: "#3498db",
@@ -114,7 +114,29 @@ export const stylesForms = StyleSheet.create({
     alignItems: "center",
   },
   submitButtonText: {
-    fontSize: 20
+    fontSize: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    width: "80%",
+    maxHeight: "80%",
+    height: 200,
+    textAlign: "center",
+    justifyContent: "space-around",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
   },
 });
 
@@ -227,6 +249,45 @@ export const stylesHome = StyleSheet.create({
     color: "#fff",
     marginLeft: 5,
     fontSize: 18,
+    fontWeight: "600",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    width: "80%",
+    maxHeight: "80%",
+    height: 200,
+    textAlign: "center",
+    justifyContent: "space-around",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  modalButton: {
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+  },
+  modalButtonEdit: {
+    backgroundColor: "#42a5f5",
+  },
+  modalButtonDelete: {
+    backgroundColor: "#FF4444",
+  },
+  modalButtonText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 20,
     fontWeight: "600",
   },
 });

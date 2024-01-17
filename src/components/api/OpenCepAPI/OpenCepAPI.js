@@ -11,7 +11,6 @@ export const fetchOpenCepApi = async (cep, token) => {
 
     if (response.ok) {
       const result = await response.json();
-      console.log('teste api', result)
       return result;
     } else {
       throw new Error(`Error fetching data. Status: ${response.status}`);

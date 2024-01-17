@@ -25,10 +25,12 @@ const useStorage = () => {
   const removeItem = async (key, data) => {
     try {
       let proposals = await AsyncStorage.getItem(key);
+      proposals = proposals ? JSON.parse(proposals) : [];
+  
       let allProposals = proposals.filter((proposal) => {
-        return proposal !== data;
+        return proposal.id !== data.id;
       });
-
+  
       await AsyncStorage.setItem(key, JSON.stringify(allProposals));
       return allProposals;
     } catch (error) {
@@ -40,8 +42,6 @@ const useStorage = () => {
   const logAsyncStorageItems = async () => {
     try {
       const keys = await AsyncStorage.getAllKeys();
-      console.log("All Keys:", keys);
-  
       for (const key of keys) {
         const value = await AsyncStorage.getItem(key);
         console.log(`Key: ${key}, Value: ${value}`);

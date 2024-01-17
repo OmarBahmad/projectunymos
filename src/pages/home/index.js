@@ -1,29 +1,79 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert, TextInput } from "react-native";
 
 import { useIsFocused } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 
-import { stylesHome} from "../../styles/GlobalStyles";
+import { stylesHome } from "../../styles/GlobalStyles";
 import PickerSelect from "../../components/forms/PickerSelect";
 import useStorage from "../../components/hooks/useStorage";
 import { formatCPF } from "../../utils/FormatInputs";
+import ItemModal from "../../components/home/ItemModal";
 
 export function Home({ navigation }) {
-  const { getItem } = useStorage();
+  const { getItem, removeItem } = useStorage();
+  const isFocused = useIsFocused();
   const [proposals, setProposals] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState();
-  const isFocused = useIsFocused();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [forceReload, setforceReload] = useState(false);
+  const [textInputValue, setTextInputValue] = useState("");
+
 
   useEffect(() => {
     async function loadProposal() {
       const proposals = await getItem("@proposal");
       setProposals(proposals);
+      console.log('all proposals',proposals )
     }
     loadProposal();
-  }, [isFocused]);
+  }, [isFocused, forceReload]);
 
+  const handleItemPress = (item) => {
+    setSelectedItem(item);
+    setModalVisible(true);
+  };
+
+  const handleEdit = () => {
+    navigation.navigate("Profile", selectedItem);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await removeItem("@proposal", selectedItem);
+      setforceReload(!forceReload)
+    } catch (error) {
+      console.error("Erro ao excluir item:", error);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedItem(null);
+  };
+
+  const showConfirmDialog = () => {
+    return Alert.alert(
+      "Você tem certeza?",
+      "Você tem certeza que deseja remover o usuário?",
+      [
+        {
+          text: "Sim",
+          onPress: () => {
+            handleDelete();
+          },
+        },
+        {
+          text: "Não",
+          onPress: () => {
+            handleCloseModal()
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={stylesHome.containerHome}>
@@ -49,12 +99,10 @@ export function Home({ navigation }) {
         </View>
         <FlatList
           data={proposals}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item?.id?.toString()}
           style={stylesHome.tableRowContainer}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => console.log("Item selecionado:", item)}
-            >
+            <TouchableOpacity onPress={() => handleItemPress(item)}>
               <View style={stylesHome.tableRowContent}>
                 <View style={stylesHome.tableRowIcon}>
                   <Icon
@@ -73,7 +121,9 @@ export function Home({ navigation }) {
                   <Text style={stylesHome.tableRowDataDoc}>
                     {formatCPF(item.document)}
                   </Text>
-                  <Text style={stylesHome.tableRowDataCity}>{item.city} - {item.state}</Text>
+                  <Text style={stylesHome.tableRowDataCity}>
+                    {item.city} - {item.state}
+                  </Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -94,6 +144,13 @@ export function Home({ navigation }) {
           </TouchableOpacity>
         </View>
       </View>
+      <ItemModal
+        visible={modalVisible}
+        title="Escolha uma ação"
+        onEdit={handleEdit}
+        onDelete={showConfirmDialog}
+        onClose={handleCloseModal}
+      />
     </View>
   );
 }
