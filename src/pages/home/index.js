@@ -8,6 +8,7 @@ import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { stylesHome} from "../../styles/GlobalStyles";
 import PickerSelect from "../../components/forms/PickerSelect";
 import useStorage from "../../components/hooks/useStorage";
+import { formatCPF } from "../../utils/FormatInputs";
 
 export function Home({ navigation }) {
   const { getItem } = useStorage();
@@ -70,9 +71,9 @@ export function Home({ navigation }) {
                 <View style={stylesHome.tableRowData}>
                   <Text style={stylesHome.tableRowDataName}>{item.name}</Text>
                   <Text style={stylesHome.tableRowDataDoc}>
-                    {item.document}
+                    {formatCPF(item.document)}
                   </Text>
-                  <Text style={stylesHome.tableRowDataCity}>{item.city}</Text>
+                  <Text style={stylesHome.tableRowDataCity}>{item.city} - {item.state}</Text>
                 </View>
               </View>
             </TouchableOpacity>
