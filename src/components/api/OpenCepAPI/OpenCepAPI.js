@@ -1,6 +1,6 @@
 export const fetchOpenCepApi = async (cep, token) => {
   try {
-    const apiEndpoint = `http://opencep.com/v1/${cep}`;
+    const apiEndpoint = `https://opencep.com/v1/${cep}`;
     const response = await fetch(apiEndpoint, {
       method: "GET",
       headers: {
