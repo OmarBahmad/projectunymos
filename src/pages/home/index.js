@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, Alert, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  TextInput,
+} from "react-native";
 
 import { useIsFocused } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import removeAccents from "remove-accents";
 
 import { stylesHome } from "../../styles/GlobalStyles";
 import PickerSelect from "../../components/forms/PickerSelect";
 import useStorage from "../../components/hooks/useStorage";
 import { formatCPF } from "../../utils/FormatInputs";
 import ItemModal from "../../components/home/ItemModal";
+import SearchInput from "../../components/home/SearchInput";
 
 export function Home({ navigation }) {
   const { getItem, removeItem } = useStorage();
@@ -20,13 +29,13 @@ export function Home({ navigation }) {
   const [selectedItem, setSelectedItem] = useState(null);
   const [forceReload, setforceReload] = useState(false);
   const [textInputValue, setTextInputValue] = useState("");
-
+  const [filteredProposals, setFilteredProposals] = useState([]);
 
   useEffect(() => {
     async function loadProposal() {
       const proposals = await getItem("@proposal");
       setProposals(proposals);
-      console.log('all proposals',proposals )
+      setFilteredProposals(proposals);
     }
     loadProposal();
   }, [isFocused, forceReload]);
@@ -43,7 +52,7 @@ export function Home({ navigation }) {
   const handleDelete = async () => {
     try {
       await removeItem("@proposal", selectedItem);
-      setforceReload(!forceReload)
+      setforceReload(!forceReload);
     } catch (error) {
       console.error("Erro ao excluir item:", error);
     }
@@ -68,11 +77,53 @@ export function Home({ navigation }) {
         {
           text: "Não",
           onPress: () => {
-            handleCloseModal()
+            handleCloseModal();
           },
         },
       ]
     );
+  };
+
+  const handleSearch = () => {
+    const normalizedSearch = removeAccents(textInputValue).toLowerCase();
+
+    const filtered = proposals.filter((item) => {
+      const normalizeField = (field) => removeAccents(field).toLowerCase();
+
+      let searchCondition = false;
+
+      switch (selectedFilter) {
+        case "document":
+          searchCondition = normalizeField(item.cpf).includes(normalizedSearch);
+          break;
+        case "name":
+          searchCondition = normalizeField(item.name).includes(
+            normalizedSearch
+          );
+          break;
+        case "city":
+          searchCondition = normalizeField(item.city).includes(
+            normalizedSearch
+          );
+          break;
+        case "phone":
+          searchCondition = normalizeField(item.phone).includes(
+            normalizedSearch
+          );
+          break;
+        case "email":
+          searchCondition = normalizeField(item.email).includes(
+            normalizedSearch
+          );
+          break;
+        default:
+          searchCondition = true;
+      }
+
+      return searchCondition;
+    });
+
+    setFilteredProposals(filtered);
   };
 
   return (
@@ -87,18 +138,19 @@ export function Home({ navigation }) {
               onValueChange={(value) => setSelectedFilter(value)}
               label="Filtrar por"
               hasTextLabel={false}
-              customStyle={true}
+              customStyle="home"
             />
           </View>
-          <TouchableOpacity style={stylesHome.searchButton}>
-            <View style={stylesHome.searchButtonContainer}>
-              <Icon name="search" size={20} color="#8e8e93" />
-              <Text style={stylesHome.searchButtonText}>Search</Text>
-            </View>
-          </TouchableOpacity>
+          <SearchInput
+            onChangeText={(text) => setTextInputValue(text)}
+            onSearchPress={handleSearch}
+            onSubmitEditing={handleSearch}
+            placeholder="Search"
+            value={textInputValue}
+          />
         </View>
         <FlatList
-          data={proposals}
+          data={filteredProposals}
           keyExtractor={(item) => item?.id?.toString()}
           style={stylesHome.tableRowContainer}
           renderItem={({ item }) => (
@@ -138,7 +190,10 @@ export function Home({ navigation }) {
             <Text style={stylesHome.buttonText}>Nova Proposta</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={stylesHome.reportButton}>
+          <TouchableOpacity
+            style={stylesHome.reportButton}
+            onPress={() => navigation.navigate("Report", proposals)}
+          >
             <FontAwesome5 name="print" size={20} color="white" />
             <Text style={stylesHome.buttonText}>Relatório</Text>
           </TouchableOpacity>

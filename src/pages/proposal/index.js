@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 
+import removeAccents from 'remove-accents';
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useRoute } from "@react-navigation/native";
 
@@ -138,21 +139,21 @@ export function ProposalFormScreen({ navigation }) {
         id: new Date().getTime(),
         proposalDate: moment(proposalDate).format("DD/MM/YYYY"),
         document,
-        name,
+        name: removeAccents(name),
         ieRg,
         maritalStatus,
         phone,
         gender,
         email,
-        profession,
+        profession: removeAccents(profession),
         birthDate: moment(birthDate).format("DD/MM/YYYY"),
         cep,
-        state,
-        city,
-        neighborhood,
-        address,
+        state: removeAccents(state),
+        city: removeAccents(city),
+        neighborhood: removeAccents(neighborhood),
+        address: removeAccents(address),
         number,
-        complement,
+        complement: removeAccents(complement),
         proposalStatus,
       };
       await saveItem("@proposal", formData);
@@ -214,6 +215,7 @@ export function ProposalFormScreen({ navigation }) {
           onValueChange={setMaritalStatus}
           label="Estado Civil"
           hasTextLabel={true}
+          customStyle='forms'
         />
       </View>
 
@@ -250,6 +252,7 @@ export function ProposalFormScreen({ navigation }) {
           onValueChange={setGender}
           label="Gênero"
           hasTextLabel={true}
+          customStyle='forms'
         />
       </View>
 
@@ -353,6 +356,7 @@ export function ProposalFormScreen({ navigation }) {
           onValueChange={setProposalStatus}
           label="Conclusão da Proposta"
           hasTextLabel={true}
+          customStyle='forms'
         />
       </View>
 

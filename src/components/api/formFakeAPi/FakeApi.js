@@ -21,7 +21,9 @@ const fakeApi = {
         { label: "CPF", value: "document" },
         { label: "Nome", value: "name" },
         { label: "Cidade", value: "city" },
-        { label: "Proposta", value: "proposal" },
+        { label: "Estado", value: "state" },
+        { label: "Telefone", value: "phone" },
+        { label: "Email", value: "email" },
       ]
     };
     return tableData[tableName] || [];

@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Home } from "./pages/home";
 import { ProposalFormScreen } from "./pages/proposal";
+import { PieChartScreen } from "./pages/chart";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,13 @@ export function Routes() {
         component={ProposalFormScreen}
         options={{
           title: "Criar Propostas",
+        }}
+      />
+      <Stack.Screen
+        name="Report"
+        component={PieChartScreen}
+        options={{
+          title: "Relatórios",
         }}
       />
     </Stack.Navigator>
