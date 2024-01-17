@@ -5,14 +5,25 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  ToastAndroid,
+  ActivityIndicator,
 } from "react-native";
+
+import removeAccents from 'remove-accents';
+import ConfettiCannon from "react-native-confetti-cannon";
+import { useRoute } from "@react-navigation/native";
 
 import { stylesForms } from "../../styles/GlobalStyles";
 import useStorage from "../../components/hooks/useStorage";
 import DatePicker from "../../components/forms/DatePicker";
 import PickerSelect from "../../components/forms/PickerSelect";
+import { NumericInput } from "../../components/forms/NumericInput";
+import { TextInputComponent } from "../../components/forms/TextInput";
+import CustomModal from "../../components/forms/CustomModal";
+import { fetchOpenCepApi } from "../../components/api/OpenCepAPI/OpenCepAPI";
 
-export function ProposalFormScreen() {
+export function ProposalFormScreen({ navigation }) {
+  const [id, setId] = useState("");
   const [proposalDate, setProposalDate] = useState(new Date());
   const [document, setDocument] = useState("");
   const [name, setName] = useState("");
@@ -24,10 +35,6 @@ export function ProposalFormScreen() {
   const [profession, setProfession] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [cep, setCep] = useState("");
-  const [stateFromCep, setStateFromCep] = useState("");
-  const [cityFromCep, setCityFromCep] = useState("");
-  const [neighborhoodFromCep, setNeighborhoodFromCep] = useState("");
-  const [addressFromCep, setAddressFromCep] = useState("");
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
@@ -36,63 +43,123 @@ export function ProposalFormScreen() {
   const [complement, setComplement] = useState("");
   const [proposalStatus, setProposalStatus] = useState("");
 
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
   const moment = require("moment");
-
-  const { getItem, saveItem, logAsyncStorageItems } = useStorage();
-
+  const { getItem, saveItem, removeItem } = useStorage();
+  const route = useRoute();
+  const propItem = route?.params || {};
+  if (propItem && Object.keys(propItem).length > 0) {
+    useEffect(() => {
+      if (propItem) {
+        setId(propItem.id);
+        setProposalDate(moment(propItem.proposalDate, "DD/MM/YYYY").toDate());
+        setDocument(propItem.document);
+        setName(propItem.name);
+        setIeRg(propItem.ieRg);
+        setMaritalStatus(propItem.maritalStatus);
+        setPhone(propItem.phone);
+        setGender(propItem.gender);
+        setEmail(propItem.email);
+        setProfession(propItem.profession);
+        setBirthDate(moment(propItem.birthDate, "DD/MM/YYYY").toDate());
+        setCep(propItem.cep);
+        setState(propItem.state);
+        setCity(propItem.city);
+        setNeighborhood(propItem.neighborhood);
+        setAddress(propItem.address);
+        setNumber(propItem.number);
+        setComplement(propItem.complement);
+        setProposalStatus(propItem.proposalStatus);
+      }
+    }, []);
+  }
   const handleIntelligentSearch = async () => {
-    // Implement logic to fetch data from Correios API based on the entered CEP
-    // Update the state, city, neighborhood, and address fields accordingly
     try {
-      await logAsyncStorageItems();
-      // Example: const result = await fetchCorreiosApi(cep);
-      // Example: setStateFromCep(result.state);
-      // Example: setCityFromCep(result.city);
-      // Example: setNeighborhood(result.neighborhood);
-      // Example: setComplement(result.address);
+      setLoading(true);
+      if (cep.length !== 8) {
+        ToastAndroid.showWithGravityAndOffset(
+          "CEP deve conter 8 dígitos.",
+          ToastAndroid.LONG,
+          ToastAndroid.BOTTOM,
+          30,
+          100
+        );
+        setLoading(false);
+        return;
+      }
+      const result = await fetchOpenCepApi(cep);
+
+      if (result.error) {
+        ToastAndroid.showWithGravityAndOffset(
+          "CEP Inválido\nPor favor, insira um CEP válido.",
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER,
+          25,
+          50
+        );
+      } else {
+        setState(result.uf);
+        setCity(result.localidade);
+        setNeighborhood(result.bairro);
+        setAddress(result.logradouro);
+      }
+      setLoading(false);
     } catch (error) {
-      console.error("Error fetching data from Correios API:", error);
+      setLoading(false);
+      console.error("Error fetching data from:", error);
     }
   };
 
-  useEffect(() => {
-    // Fetch data from API for dropdowns (replace with actual API calls)
-    // Example: fetchStateData();
-    // Example: fetchCityData(selectedState);
-    // Example: fetchNeighborhoodData(selectedCity);
-  }, []);
+  const handleModalClose = () => {
+    setSuccessModalVisible(false);
+    navigation.navigate("Home");
+  };
+
+  const successModalButtons = [
+    {
+      title: "Cadastro Concluido!",
+      onPress: handleModalClose,
+    },
+  ];
 
   const handleSubmit = async () => {
     try {
+      const existingProposals = await getItem("@proposal");
+      const existingItemIndex = existingProposals.findIndex(
+        (item) => item.id === id
+      );
+
+      if (existingItemIndex !== -1) {
+        await removeItem("@proposal", existingProposals[existingItemIndex]);
+      }
       const formData = {
         id: new Date().getTime(),
         proposalDate: moment(proposalDate).format("DD/MM/YYYY"),
         document,
-        name,
+        name: removeAccents(name),
         ieRg,
         maritalStatus,
         phone,
         gender,
         email,
-        profession,
+        profession: removeAccents(profession),
         birthDate: moment(birthDate).format("DD/MM/YYYY"),
         cep,
-        stateFromCep,
-        cityFromCep,
-        neighborhoodFromCep,
-        addressFromCep,
-        state,
-        city,
-        neighborhood,
-        address,
+        state: removeAccents(state),
+        city: removeAccents(city),
+        neighborhood: removeAccents(neighborhood),
+        address: removeAccents(address),
         number,
-        complement,
+        complement: removeAccents(complement),
         proposalStatus,
       };
       await saveItem("@proposal", formData);
-      console.log("Form data saved:", formData);
+      // console.log("Form data saved:", formData);
+      setSuccessModalVisible(true);
+      this.explosion && this.explosion.start();
     } catch (error) {
       console.error("Error saving form data:", error);
     }
@@ -111,64 +178,55 @@ export function ProposalFormScreen() {
             editable={false}
           />
         </View>
-
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <View style={stylesForms.labelContainer}>
-            <Text style={stylesForms.label}>CPF/CNPJ</Text>
-          </View>
-          <TextInput
-            style={[stylesForms.input]}
-            value={document}
-            onChangeText={(text) => setDocument(text)}
-            placeholder="CPF/CNPJ"
-            maxLength={14}
-            keyboardType="numeric"
-          />
-        </View>
-      </View>
-
-      <View style={[stylesForms.formCol, stylesForms.longInput]}>
-        <View style={stylesForms.labelContainer}>
-          <Text style={stylesForms.label}>Nome do Titular</Text>
-        </View>
-        <TextInput
-          style={stylesForms.input}
-          value={name}
-          onChangeText={(text) => setName(text)}
-          placeholder="Nome do Titular"
+        <NumericInput
+          label="CPF"
+          originalValue={document}
+          onChangeText={setDocument}
+          placeholder="Digite CPF"
+          keyboardType="numeric"
+          formatType="CPF"
+          shortInput={true}
+          maxLength={18}
         />
       </View>
 
+      <TextInputComponent
+        label="Nome"
+        value={name}
+        onChangeText={setName}
+        placeholder="Digite o Nome"
+        shortInput={false}
+      />
+
       <View style={stylesForms.formRow}>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>IE/RG</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={ieRg}
-            onChangeText={(text) => setIeRg(text)}
-            placeholder="IE/RG"
-            keyboardType="numeric"
-          />
-        </View>
+        <NumericInput
+          label="RG"
+          originalValue={ieRg}
+          onChangeText={setIeRg}
+          placeholder="Digite RG"
+          keyboardType="numeric"
+          formatType="RG"
+          shortInput={true}
+          maxLength={10}
+        />
         <PickerSelect
           tableName="maritalStatus"
           selectedItem={maritalStatus}
           onValueChange={setMaritalStatus}
           label="Estado Civil"
           hasTextLabel={true}
+          customStyle='forms'
         />
       </View>
 
       <View style={stylesForms.formRow}>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>Profissão</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={profession}
-            onChangeText={(text) => setProfession(text)}
-            placeholder="Profissão"
-          />
-        </View>
+        <TextInputComponent
+          label="Profissão"
+          value={profession}
+          onChangeText={setProfession}
+          placeholder="Digite a Profissão"
+          shortInput={true}
+        />
         <DatePicker
           birthDate={birthDate}
           setBirthDate={setBirthDate}
@@ -178,48 +236,48 @@ export function ProposalFormScreen() {
       </View>
 
       <View style={stylesForms.formRow}>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>Celular</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={phone}
-            onChangeText={(text) => setPhone(text)}
-            placeholder="Celular"
-            keyboardType="numeric"
-          />
-        </View>
+        <NumericInput
+          label="Telefone"
+          originalValue={phone}
+          onChangeText={setPhone}
+          placeholder="Digite Telefone"
+          keyboardType="numeric"
+          formatType="Phone"
+          shortInput={true}
+          maxLength={15}
+        />
         <PickerSelect
           tableName="gender"
           selectedItem={gender}
           onValueChange={setGender}
           label="Gênero"
           hasTextLabel={true}
+          customStyle='forms'
         />
       </View>
 
       <View style={stylesForms.formRow}>
-        <View style={[stylesForms.formCol, stylesForms.longInput]}>
-          <Text style={stylesForms.label}>Email</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={email}
-            onChangeText={(text) => setEmail(text)}
-            placeholder="Email"
-          />
-        </View>
+        <TextInputComponent
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Digite o Email"
+          keyboardType="email-address"
+          shortInput={false}
+        />
       </View>
 
       <View style={stylesForms.formRow}>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>CEP</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={cep}
-            onChangeText={(text) => setCep(text)}
-            placeholder="CEP"
-            keyboardType="numeric"
-          />
-        </View>
+        <NumericInput
+          label="CEP"
+          originalValue={cep}
+          onChangeText={setCep}
+          placeholder="Digite o CEP"
+          keyboardType="numeric"
+          formatType="CEP"
+          shortInput={true}
+          maxLength={10}
+        />
         <View style={[stylesForms.seachButtonContainer]}>
           <TouchableOpacity
             style={[
@@ -228,73 +286,67 @@ export function ProposalFormScreen() {
               stylesForms.button,
             ]}
             onPress={handleIntelligentSearch}
+            disabled={loading}
           >
-            <Text style={stylesForms.buttonText}>Busca Inteligente</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={stylesForms.buttonText}>Busca Inteligente</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={stylesForms.formRow}>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>Estado</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={state || stateFromCep}
-            onChangeText={(text) => setState(text)}
-            placeholder="Estado"
-          />
-        </View>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>Cidade</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={city || cityFromCep}
-            onChangeText={(text) => setCity(text)}
-            placeholder="Cidade"
-          />
-        </View>
+        <TextInputComponent
+          label="Estado"
+          value={state}
+          onChangeText={(text) => setState(text)}
+          placeholder="Digite o Estado"
+          shortInput={true}
+        />
+        <TextInputComponent
+          label="Cidade"
+          value={city}
+          onChangeText={(text) => setCity(text)}
+          placeholder="Digite a Cidade"
+          shortInput={true}
+        />
       </View>
       <View style={stylesForms.formRow}>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>Bairro</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={neighborhood || neighborhoodFromCep}
-            onChangeText={(text) => setNeighborhood(text)}
-            placeholder="Bairro"
-          />
-        </View>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>Endereço</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={address || addressFromCep}
-            onChangeText={(text) => setAddress(text)}
-            placeholder="Endereço"
-          />
-        </View>
+        <TextInputComponent
+          label="Bairro"
+          value={neighborhood}
+          onChangeText={(text) => setNeighborhood(text)}
+          placeholder="Digite o Bairro"
+          shortInput={true}
+        />
+        <TextInputComponent
+          label="Endereço"
+          value={address}
+          onChangeText={(text) => setAddress(text)}
+          placeholder="Digite o Endereço"
+          shortInput={true}
+        />
       </View>
 
       <View style={stylesForms.formRow}>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>Número</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={number}
-            onChangeText={(text) => setNumber(text)}
-            placeholder="Número"
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-          <Text style={stylesForms.label}>Complemento</Text>
-          <TextInput
-            style={stylesForms.input}
-            value={complement}
-            onChangeText={(text) => setComplement(text)}
-            placeholder="Complemento"
-          />
-        </View>
+        <NumericInput
+          label="Número"
+          originalValue={number}
+          onChangeText={setNumber}
+          placeholder="Digite o Número"
+          keyboardType="numeric"
+          formatType="number"
+          shortInput={true}
+        />
+        <TextInputComponent
+          label="Complemento"
+          value={complement}
+          onChangeText={setComplement}
+          placeholder="Digite o Complemento"
+          shortInput={true}
+        />
       </View>
 
       <View style={stylesForms.formRow}>
@@ -304,6 +356,7 @@ export function ProposalFormScreen() {
           onValueChange={setProposalStatus}
           label="Conclusão da Proposta"
           hasTextLabel={true}
+          customStyle='forms'
         />
       </View>
 
@@ -312,6 +365,19 @@ export function ProposalFormScreen() {
           Enviar Proposta
         </Text>
       </TouchableOpacity>
+      <CustomModal
+        visible={successModalVisible}
+        title="Cadastro concluído com sucesso!"
+        buttons={successModalButtons}
+        onClose={handleModalClose}
+      />
+      <ConfettiCannon
+        count={200}
+        origin={{ x: -10, y: 0 }}
+        autoStart={false}
+        fallSpeed={2000}
+        ref={(ref) => (this.explosion = ref)}
+      />
     </ScrollView>
   );
 }

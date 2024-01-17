@@ -2,12 +2,22 @@ import React, { useState, useEffect } from "react";
 import { View, Text } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 import {
+  stylesHome,
   stylesForms,
+  pieChartStyles,
   pickerSelectStylesForms,
+  pickerSelectStylesHome,
 } from "../../styles/GlobalStyles";
 import fakeApi from "../api/formFakeAPi/FakeApi";
 
-const PickerSelect = ({ tableName, selectedItem, onValueChange, label, hasTextLabel }) => {
+const PickerSelect = ({
+  tableName,
+  selectedItem,
+  onValueChange,
+  label,
+  hasTextLabel,
+  customStyle,
+}) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -23,12 +33,55 @@ const PickerSelect = ({ tableName, selectedItem, onValueChange, label, hasTextLa
     fetchItems();
   }, [tableName]);
 
+  const getPickerStyle = () => {
+    if (customStyle === "forms") {
+      return pickerSelectStylesForms;
+    }
+    if (customStyle === "home") {
+      return pickerSelectStylesHome;
+    }
+    if (customStyle === "chart") {
+      return pickerSelectStylesForms;
+    }
+
+    return pickerSelectStylesForms;
+  };
+
+  const getViewStyle = () => {
+    if (customStyle === "forms") {
+      return [stylesForms.formCol, stylesForms.shortInput];
+    }
+    if (customStyle === "chart") {
+      return [pieChartStyles.inputLabel];
+    }
+    if (customStyle === "home") {
+      return '';
+    }
+    return "";
+  };
+
+  const getViewLabel = () => {
+    if (customStyle === "forms") {
+      return [stylesForms.label];
+    }
+    if (customStyle === "chart") {
+      return [pieChartStyles.inputLabel];
+    }
+    if (customStyle === "home") {
+      return '';
+    }
+    return "";
+  };
+
   return (
-    <View style={[stylesForms.formCol, stylesForms.shortInput]}>
-      {hasTextLabel && <Text style={stylesForms.label}>{label}</Text>}
+    <View style={getViewStyle()}>
+      {hasTextLabel && <Text style={getViewLabel()}>{label}</Text>}
       <View style={stylesForms.pickerContainer}>
         <RNPickerSelect
-          style={pickerSelectStylesForms}
+          style={{
+            inputAndroid: getPickerStyle(),
+            inputIOS: getPickerStyle(),
+          }}
           placeholder={{
             label: `${label}`,
             value: null,
